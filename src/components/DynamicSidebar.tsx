@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ArrowDown,
@@ -31,6 +32,19 @@ type DetailProps = {
 };
 
 type Props = HomeProps | DetailProps;
+
+type ObservedHeading = {
+  id: string;
+  depth: number;
+  element: HTMLElement;
+};
+
+const TOC_DEBUG_STORAGE_KEY = 'portfolioTocDebug';
+const ACTIVE_LINE_PX = 96;
+const SCROLL_IDLE_MS = 120;
+const MAX_PENDING_MS = 1600;
+const BOTTOM_THRESHOLD_PX = 4;
+const SUBHEADING_TAKEOVER_PX = ACTIVE_LINE_PX / 4;
 
 const copy = {
   dock: {
@@ -106,6 +120,45 @@ const copy = {
     en: 'Switch language'
   }
 } satisfies Record<string, LocalizedText>;
+
+function readHashId(hash: string) {
+  const value = hash.replace(/^#/u, '');
+
+  if (!value) {
+    return '';
+  }
+
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function isTocDebugEnabled() {
+  if (!import.meta.env.DEV || typeof window === 'undefined') {
+    return false;
+  }
+
+  try {
+    return window.localStorage.getItem(TOC_DEBUG_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function debugToc(message: string, payload?: unknown) {
+  if (!isTocDebugEnabled()) {
+    return;
+  }
+
+  if (payload === undefined) {
+    console.info(`[toc] ${message}`);
+    return;
+  }
+
+  console.info(`[toc] ${message}`, payload);
+}
 
 function flatten(items: TocItem[]): TocItem[] {
   return items.flatMap((item) => [item, ...flatten(item.children)]);
@@ -203,7 +256,7 @@ function TocBranch({
 }: {
   items: TocItem[];
   activeId: string;
-  onNavigate: () => void;
+  onNavigate: (id: string, event: ReactMouseEvent<HTMLAnchorElement>) => void;
   locale: 'zh' | 'en';
 }) {
   return (
@@ -212,7 +265,7 @@ function TocBranch({
         <li key={item.slug}>
           <a
             href={`#${item.slug}`}
-            onClick={onNavigate}
+            onClick={(event) => onNavigate(item.slug, event)}
             className={`block rounded-2xl px-3 py-2.5 text-sm leading-6 transition ${
               activeId === item.slug
                 ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950'
@@ -240,10 +293,42 @@ export default function DynamicSidebar(props: Props) {
   const [activeId, setActiveId] = useState('');
   const [hiddenOffset, setHiddenOffset] = useState(252);
   const dockRef = useRef<HTMLElement | null>(null);
+  const observedHeadingsRef = useRef<ObservedHeading[]>([]);
+  const pendingScrollTargetRef = useRef<string | null>(null);
+  const scrollIdleTimeoutRef = useRef<number | null>(null);
+  const maxPendingTimeoutRef = useRef<number | null>(null);
+  const activeHeadingFrameRef = useRef<number | null>(null);
   const tocItems = props.mode === 'detail' ? props.tocItems : [];
   const motionTransition = prefersReducedMotion
     ? { duration: 0 }
     : { type: 'spring' as const, stiffness: 260, damping: 28, mass: 0.9 };
+
+  function clearScrollIdleTimer() {
+    if (scrollIdleTimeoutRef.current !== null) {
+      window.clearTimeout(scrollIdleTimeoutRef.current);
+      scrollIdleTimeoutRef.current = null;
+    }
+  }
+
+  function clearMaxPendingTimeout() {
+    if (maxPendingTimeoutRef.current !== null) {
+      window.clearTimeout(maxPendingTimeoutRef.current);
+      maxPendingTimeoutRef.current = null;
+    }
+  }
+
+  function clearPendingScrollTarget() {
+    pendingScrollTargetRef.current = null;
+    clearScrollIdleTimer();
+    clearMaxPendingTimeout();
+  }
+
+  function clearPendingActiveHeadingFrame() {
+    if (activeHeadingFrameRef.current !== null) {
+      window.cancelAnimationFrame(activeHeadingFrameRef.current);
+      activeHeadingFrameRef.current = null;
+    }
+  }
 
   const syncDockLayout = useEffectEvent(() => {
     const root = document.documentElement;
@@ -259,33 +344,186 @@ export default function DynamicSidebar(props: Props) {
     root.style.setProperty('--sidebar-offset', `${width + 28}px`);
   });
 
-  const syncActiveHeading = useEffectEvent((entries: IntersectionObserverEntry[]) => {
-    const visible = entries
-      .filter((entry) => entry.isIntersecting)
-      .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
+  const computeActiveHeading = useEffectEvent((reason: string) => {
+    const headings = observedHeadingsRef.current;
 
-    const visibleInFlow = visible
-      .filter((entry) => entry.boundingClientRect.top >= 0)
-      .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
-
-    if (visibleInFlow[0]) {
-      setActiveId(visibleInFlow[0].target.id);
+    if (headings.length === 0) {
       return;
     }
 
-    if (visible[0]) {
-      const closestVisible = [...visible].sort((left, right) => right.boundingClientRect.top - left.boundingClientRect.top);
-      setActiveId(closestVisible[0].target.id);
+    if (pendingScrollTargetRef.current) {
+      debugToc('sync skipped while pending', {
+        reason,
+        pendingTargetId: pendingScrollTargetRef.current,
+        scrollY: Number(window.scrollY.toFixed(1))
+      });
       return;
     }
 
-    const crossed = entries
-      .filter((entry) => entry.boundingClientRect.top < 140)
-      .sort((left, right) => right.boundingClientRect.top - left.boundingClientRect.top);
+    const remainingScroll = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+    const positions = headings.map((heading) => ({
+      id: heading.id,
+      depth: heading.depth,
+      top: heading.element.getBoundingClientRect().top
+    }));
 
-    if (crossed[0]) {
-      setActiveId(crossed[0].target.id);
+    if (positions.length === 0) {
+      return;
     }
+
+    let nextActiveId = '';
+
+    if (remainingScroll <= BOTTOM_THRESHOLD_PX) {
+      nextActiveId = positions[positions.length - 1]?.id ?? '';
+    } else {
+      const topLevelPositions = positions.filter((item) => item.depth <= 2);
+      const crossedTopLevels = topLevelPositions.filter((item) => item.top <= ACTIVE_LINE_PX);
+      const topLevelActive =
+        crossedTopLevels[crossedTopLevels.length - 1] ??
+        topLevelPositions[0] ??
+        positions[0];
+
+      if (!topLevelActive) {
+        return;
+      }
+
+      nextActiveId = topLevelActive.id;
+
+      if (topLevelActive.depth >= 2) {
+        const currentIndex = positions.findIndex((item) => item.id === topLevelActive.id);
+        const nextTopLevelIndex = positions.findIndex((item, index) => index > currentIndex && item.depth <= 2);
+        const sectionEndIndex = nextTopLevelIndex === -1 ? positions.length : nextTopLevelIndex;
+        const descendantPositions = positions.slice(currentIndex + 1, sectionEndIndex);
+        const crossedDescendants = descendantPositions.filter(
+          (item) => item.depth > topLevelActive.depth && item.top <= SUBHEADING_TAKEOVER_PX
+        );
+        const deepestDescendant = crossedDescendants[crossedDescendants.length - 1];
+
+        if (deepestDescendant) {
+          nextActiveId = deepestDescendant.id;
+        }
+      }
+    }
+
+    if (!nextActiveId) {
+      return;
+    }
+
+    debugToc('computed active', {
+      reason,
+      nextActiveId,
+      remainingScroll: Number(remainingScroll.toFixed(1)),
+      scrollY: Number(window.scrollY.toFixed(1)),
+      headings: positions.map((item) => ({
+        id: item.id,
+        depth: item.depth,
+        top: Number(item.top.toFixed(1))
+      }))
+    });
+
+    setActiveId((current) => (current === nextActiveId ? current : nextActiveId));
+  });
+
+  const scheduleActiveHeadingSync = useEffectEvent((reason: string) => {
+    if (activeHeadingFrameRef.current !== null) {
+      return;
+    }
+
+    activeHeadingFrameRef.current = window.requestAnimationFrame(() => {
+      activeHeadingFrameRef.current = null;
+      computeActiveHeading(reason);
+    });
+  });
+
+  const releasePendingScrollTarget = useEffectEvent((reason: string) => {
+    const pendingTargetId = pendingScrollTargetRef.current;
+
+    if (!pendingTargetId) {
+      return;
+    }
+
+    debugToc('pending released', {
+      reason,
+      pendingTargetId,
+      scrollY: Number(window.scrollY.toFixed(1))
+    });
+
+    clearPendingScrollTarget();
+    scheduleActiveHeadingSync(`pending:${reason}`);
+  });
+
+  const resetPendingScrollIdleTimer = useEffectEvent((reason: string) => {
+    if (!pendingScrollTargetRef.current) {
+      return;
+    }
+
+    clearScrollIdleTimer();
+    scrollIdleTimeoutRef.current = window.setTimeout(() => {
+      releasePendingScrollTarget(`idle:${reason}`);
+    }, prefersReducedMotion ? 0 : SCROLL_IDLE_MS);
+  });
+
+  const holdPendingScrollTarget = useEffectEvent((id: string) => {
+    debugToc('pending start', {
+      pendingTargetId: id,
+      scrollY: Number(window.scrollY.toFixed(1))
+    });
+
+    pendingScrollTargetRef.current = id;
+    clearScrollIdleTimer();
+    clearMaxPendingTimeout();
+
+    maxPendingTimeoutRef.current = window.setTimeout(() => {
+      if (pendingScrollTargetRef.current !== id) {
+        return;
+      }
+
+      debugToc('pending timeout', {
+        pendingTargetId: id,
+        scrollY: Number(window.scrollY.toFixed(1))
+      });
+      releasePendingScrollTarget('timeout');
+    }, prefersReducedMotion ? 0 : MAX_PENDING_MS);
+  });
+
+  const handleWindowScroll = useEffectEvent(() => {
+    if (pendingScrollTargetRef.current) {
+      resetPendingScrollIdleTimer('scroll');
+      return;
+    }
+
+    scheduleActiveHeadingSync('scroll');
+  });
+
+  const handleWindowResize = useEffectEvent(() => {
+    if (pendingScrollTargetRef.current) {
+      resetPendingScrollIdleTimer('resize');
+    }
+
+    scheduleActiveHeadingSync('resize');
+  });
+
+  const handleHashChange = useEffectEvent(() => {
+    const hashId = readHashId(window.location.hash);
+
+    if (!hashId) {
+      scheduleActiveHeadingSync('hashchange:empty');
+      return;
+    }
+
+    const hasTarget = observedHeadingsRef.current.some((heading) => heading.id === hashId);
+
+    if (!hasTarget) {
+      scheduleActiveHeadingSync('hashchange:missing');
+      return;
+    }
+
+    debugToc('hash change', {
+      hashId,
+      scrollY: Number(window.scrollY.toFixed(1))
+    });
+    setActiveId(hashId);
+    scheduleActiveHeadingSync('hashchange');
   });
 
   useEffect(() => {
@@ -314,30 +552,71 @@ export default function DynamicSidebar(props: Props) {
       window.removeEventListener('resize', syncDockLayout);
       document.documentElement.style.setProperty('--sidebar-offset', '0px');
     };
-  }, [collapsed, syncDockLayout]);
+  }, [collapsed]);
+
+  useEffect(
+    () => () => {
+      clearPendingScrollTarget();
+      clearPendingActiveHeadingFrame();
+    },
+    []
+  );
 
   useEffect(() => {
     if (props.mode !== 'detail' || tocItems.length === 0) {
+      observedHeadingsRef.current = [];
+      clearPendingScrollTarget();
+      clearPendingActiveHeadingFrame();
+      setActiveId('');
       return;
     }
 
     const flatItems = flatten(tocItems);
+    const headings = flatItems
+      .map((item) => {
+        const element = document.getElementById(item.slug);
 
-    setActiveId(flatItems[0].slug);
+        if (!element) {
+          return null;
+        }
 
-    const elements = flatItems
-      .map((item) => document.getElementById(item.slug))
-      .filter((item): item is HTMLElement => Boolean(item));
+        return {
+          id: item.slug,
+          depth: item.depth,
+          element
+        } satisfies ObservedHeading;
+      })
+      .filter((item): item is ObservedHeading => Boolean(item));
 
-    const observer = new IntersectionObserver((entries) => syncActiveHeading(entries), {
-      rootMargin: '-14% 0px -68% 0px',
-      threshold: [0, 0.2, 0.4, 1]
+    observedHeadingsRef.current = headings;
+
+    const hashId = readHashId(window.location.hash);
+    const initialHeading = hashId ? headings.find((heading) => heading.id === hashId) : undefined;
+
+    debugToc('toc registered', {
+      hashId,
+      headings: headings.map((heading) => ({
+        id: heading.id,
+        depth: heading.depth
+      }))
     });
 
-    elements.forEach((element) => observer.observe(element));
+    setActiveId(initialHeading?.id ?? '');
+    scheduleActiveHeadingSync(initialHeading ? 'init:hash' : 'init');
 
-    return () => observer.disconnect();
-  }, [props.mode, syncActiveHeading, tocItems]);
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
+    window.addEventListener('resize', handleWindowResize);
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      observedHeadingsRef.current = [];
+      clearPendingScrollTarget();
+      clearPendingActiveHeadingFrame();
+      window.removeEventListener('scroll', handleWindowScroll);
+      window.removeEventListener('resize', handleWindowResize);
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [props.mode, tocItems]);
 
   function handleLocaleToggle() {
     applyLocale(locale === 'en' ? 'zh' : 'en');
@@ -358,7 +637,40 @@ export default function DynamicSidebar(props: Props) {
     }
   }
 
-  function closeAfterNavigation() {
+  function handleTocNavigation(id: string, event: ReactMouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+
+    const target = document.getElementById(id);
+
+    if (!target) {
+      return;
+    }
+
+    debugToc('toc click', {
+      id,
+      scrollY: Number(window.scrollY.toFixed(1))
+    });
+    holdPendingScrollTarget(id);
+    setActiveId(id);
+
+    const nextHash = `#${id}`;
+    if (window.location.hash === nextHash) {
+      window.history.replaceState(null, '', nextHash);
+    } else {
+      window.history.pushState(null, '', nextHash);
+    }
+
+    target.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      block: 'start'
+    });
+
+    window.requestAnimationFrame(() => {
+      if (pendingScrollTargetRef.current === id) {
+        resetPendingScrollIdleTimer('navigate');
+      }
+    });
+
     if (window.innerWidth < 1024) {
       setCollapsed(true);
     }
@@ -466,7 +778,12 @@ export default function DynamicSidebar(props: Props) {
                   </div>
 
                   {props.tocItems.length > 0 ? (
-                    <TocBranch items={props.tocItems} activeId={activeId} onNavigate={closeAfterNavigation} locale={locale} />
+                    <TocBranch
+                      items={props.tocItems}
+                      activeId={activeId}
+                      onNavigate={handleTocNavigation}
+                      locale={locale}
+                    />
                   ) : (
                     <p className="rounded-[1.25rem] border border-dashed border-slate-300/90 px-4 py-4 text-sm leading-7 text-slate-500 dark:border-slate-700 dark:text-slate-400">
                       {copy.emptyOutline[locale]}
