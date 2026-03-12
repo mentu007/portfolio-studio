@@ -4,7 +4,7 @@ import DynamicSidebar from '../../components/DynamicSidebar';
 import Prose from '../../components/Prose.astro';
 import ProjectHero from '../../components/ProjectHero.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import { buildHeadingTree } from '../../utils/headings';
+import { buildHeadingTree, createCoverTocItem } from '../../utils/headings';
 import { getProjects, resolveProjectVideo, type ProjectEntry } from '../../utils/projects';
 import { withBase } from '../../utils/paths';
 
@@ -19,7 +19,7 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props as { project: ProjectEntry };
 const { Content, headings } = await render(project);
-const toc = buildHeadingTree(headings);
+const toc = [createCoverTocItem(), ...buildHeadingTree(headings)];
 const videoSrc = resolveProjectVideo(project);
 ---
 

@@ -85,6 +85,10 @@ const copy = {
     zh: '动态大纲',
     en: 'Reading map'
   },
+  cover: {
+    zh: '\u5c01\u9762',
+    en: 'Cover'
+  },
   emptyOutline: {
     zh: '当前项目没有可生成的目录。',
     en: 'No headings were generated for this project.'
@@ -105,6 +109,14 @@ const copy = {
 
 function flatten(items: TocItem[]): TocItem[] {
   return items.flatMap((item) => [item, ...flatten(item.children)]);
+}
+
+function getTocLabel(item: TocItem, locale: 'zh' | 'en') {
+  if (item.kind === 'cover') {
+    return copy.cover[locale];
+  }
+
+  return item.text;
 }
 
 function DockSectionTitle({ label }: { label: string }) {
@@ -186,11 +198,13 @@ function JumpButton({
 function TocBranch({
   items,
   activeId,
-  onNavigate
+  onNavigate,
+  locale
 }: {
   items: TocItem[];
   activeId: string;
   onNavigate: () => void;
+  locale: 'zh' | 'en';
 }) {
   return (
     <ol className="space-y-1.5">
@@ -205,11 +219,11 @@ function TocBranch({
                 : 'text-slate-600 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
             } ${item.depth === 3 ? 'ml-4' : item.depth === 2 ? 'ml-2' : ''}`}
           >
-            {item.text}
+            {getTocLabel(item, locale)}
           </a>
           {item.children.length > 0 && (
             <div className="mt-1">
-              <TocBranch items={item.children} activeId={activeId} onNavigate={onNavigate} />
+              <TocBranch items={item.children} activeId={activeId} onNavigate={onNavigate} locale={locale} />
             </div>
           )}
         </li>
@@ -250,8 +264,18 @@ export default function DynamicSidebar(props: Props) {
       .filter((entry) => entry.isIntersecting)
       .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
 
+    const visibleInFlow = visible
+      .filter((entry) => entry.boundingClientRect.top >= 0)
+      .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
+
+    if (visibleInFlow[0]) {
+      setActiveId(visibleInFlow[0].target.id);
+      return;
+    }
+
     if (visible[0]) {
-      setActiveId(visible[0].target.id);
+      const closestVisible = [...visible].sort((left, right) => right.boundingClientRect.top - left.boundingClientRect.top);
+      setActiveId(closestVisible[0].target.id);
       return;
     }
 
@@ -442,7 +466,7 @@ export default function DynamicSidebar(props: Props) {
                   </div>
 
                   {props.tocItems.length > 0 ? (
-                    <TocBranch items={props.tocItems} activeId={activeId} onNavigate={closeAfterNavigation} />
+                    <TocBranch items={props.tocItems} activeId={activeId} onNavigate={closeAfterNavigation} locale={locale} />
                   ) : (
                     <p className="rounded-[1.25rem] border border-dashed border-slate-300/90 px-4 py-4 text-sm leading-7 text-slate-500 dark:border-slate-700 dark:text-slate-400">
                       {copy.emptyOutline[locale]}

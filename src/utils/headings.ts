@@ -1,6 +1,7 @@
 import type { MarkdownHeading } from 'astro';
 
 export type TocItem = MarkdownHeading & {
+  kind?: 'cover';
   children: TocItem[];
 };
 
@@ -29,4 +30,14 @@ export function buildHeadingTree(headings: MarkdownHeading[]) {
   }
 
   return items;
+}
+
+export function createCoverTocItem(): TocItem {
+  return {
+    depth: 1,
+    slug: 'project-cover',
+    text: 'cover',
+    kind: 'cover',
+    children: []
+  } as TocItem;
 }
