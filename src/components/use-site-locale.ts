@@ -1,13 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Locale } from '../data/site';
-
-function readLocale(): Locale {
-  if (typeof document === 'undefined') {
-    return 'zh';
-  }
-
-  return document.documentElement.dataset.locale === 'en' ? 'en' : 'zh';
-}
+import { readLocale } from '../utils/site-preferences';
 
 export function useSiteLocale() {
   const [locale, setLocale] = useState<Locale>(readLocale);

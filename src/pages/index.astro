@@ -1,4 +1,5 @@
 ---
+import DynamicSidebar from '../components/DynamicSidebar';
 import GalleryFilter from '../components/GalleryFilter';
 import HeroBanner from '../components/HeroBanner.astro';
 import SectionHeading from '../components/SectionHeading.astro';
@@ -25,6 +26,7 @@ const galleryProjects = projects.map((project) => ({
 ---
 
 <SiteLayout title={siteProfile.seo.title} description={siteProfile.seo.description}>
+  <DynamicSidebar client:load mode="home" projectCount={projects.length} tagCount={tags.length} />
   <HeroBanner projectCount={projects.length} tagCount={tags.length} />
 
   <section id="timeline" class="space-y-6 md:space-y-8">

@@ -72,8 +72,8 @@ export default function GalleryFilter({ projects, tags, basePath, labels }: Prop
               onClick={() => startTransition(() => setActiveTag(tag))}
               className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
                 active
-                  ? 'border-fog-900 bg-fog-900 text-white'
-                  : 'border-fog-200 bg-white/85 text-fog-700 hover:border-fog-400 hover:text-fog-900'
+                  ? 'border-fog-900 bg-fog-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950'
+                  : 'border-fog-200 bg-white/85 text-fog-700 hover:border-fog-400 hover:text-fog-900 dark:border-slate-700 dark:bg-slate-900/72 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white'
               }`}
             >
               {label}
@@ -82,7 +82,7 @@ export default function GalleryFilter({ projects, tags, basePath, labels }: Prop
         })}
       </div>
 
-      <div className="mt-6 flex items-center justify-between gap-4 border-t border-fog-200 pt-4 text-xs font-mono uppercase tracking-[0.26em] text-fog-500">
+      <div className="mt-6 flex items-center justify-between gap-4 border-t border-fog-200 pt-4 text-xs font-mono uppercase tracking-[0.26em] text-fog-500 dark:border-slate-700 dark:text-slate-400">
         <span>{copy.results.replace('{count}', String(filteredProjects.length))}</span>
         <span>{activeTag === ALL_TAG ? copy.all : activeTag}</span>
       </div>
@@ -103,7 +103,7 @@ export default function GalleryFilter({ projects, tags, basePath, labels }: Prop
                 animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
                 exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.985 }}
                 transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="group relative overflow-hidden rounded-[1.7rem] border border-fog-200 bg-white/85"
+                className="group relative overflow-hidden rounded-[1.7rem] border border-fog-200 bg-white/85 dark:border-slate-700 dark:bg-slate-900/72"
               >
                 <div className="relative aspect-square overflow-hidden">
                   <img
@@ -114,9 +114,9 @@ export default function GalleryFilter({ projects, tags, basePath, labels }: Prop
                     loading="lazy"
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-fog-900/78" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-fog-900/78 dark:to-slate-950/88" />
                   <div className="absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100">
-                    <div className="absolute inset-[1.1rem] rounded-[1.15rem] border border-white/30" />
+                    <div className="absolute inset-[1.1rem] rounded-[1.15rem] border border-white/30 dark:border-slate-200/16" />
                   </div>
                   <div className="absolute inset-x-0 bottom-0 p-4">
                     <p className="font-mono text-[0.65rem] uppercase tracking-[0.26em] text-white/70">{project.date}</p>

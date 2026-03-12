@@ -19,16 +19,16 @@ const { projects } = Astro.props;
         <span class="font-mono text-[0.72rem] uppercase tracking-[0.26em] text-fog-500">
           {formatProjectDate(project.data.date)}
         </span>
-        <span class="text-sm font-medium text-fog-900 md:text-base">{project.data.title}</span>
-        <span class="grid h-9 w-9 place-items-center rounded-full border border-fog-200 bg-white text-fog-700 transition group-open:rotate-45">
+        <span class="text-sm font-medium text-fog-900 dark:text-slate-50 md:text-base">{project.data.title}</span>
+        <span class="grid h-9 w-9 place-items-center rounded-full border border-fog-200 bg-white text-fog-700 transition group-open:rotate-45 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
           <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4">
             <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
           </svg>
         </span>
       </summary>
 
-      <div class="grid gap-5 border-t border-fog-200 px-5 py-5 md:grid-cols-[240px,1fr] md:px-6 md:py-6">
-        <div class="overflow-hidden rounded-[1.4rem] border border-fog-200 bg-fog-100">
+      <div class="grid gap-5 border-t border-fog-200 px-5 py-5 dark:border-slate-700 md:grid-cols-[240px,1fr] md:px-6 md:py-6">
+        <div class="overflow-hidden rounded-[1.4rem] border border-fog-200 bg-fog-100 dark:border-slate-700 dark:bg-slate-900">
           <Image
             src={project.data.cover}
             alt={project.data.coverAlt}
@@ -39,11 +39,11 @@ const { projects } = Astro.props;
         </div>
 
         <div class="space-y-4">
-          <p class="max-w-2xl text-sm leading-7 text-fog-700 md:text-base">{project.data.summary}</p>
+          <p class="max-w-2xl text-sm leading-7 text-fog-700 dark:text-slate-300 md:text-base">{project.data.summary}</p>
 
           <div class="flex flex-wrap gap-2">
             {project.data.tags.map((tag) => (
-              <span class="rounded-full border border-fog-200 bg-white/80 px-3 py-1 text-xs font-medium text-fog-600">
+              <span class="rounded-full border border-fog-200 bg-white/80 px-3 py-1 text-xs font-medium text-fog-600 dark:border-slate-700 dark:bg-slate-900/72 dark:text-slate-300">
                 {tag}
               </span>
             ))}
@@ -52,7 +52,7 @@ const { projects } = Astro.props;
           <div class="flex flex-wrap gap-3 pt-2">
             <a
               href={withBase(`/project/${project.id}/`)}
-              class="rounded-full border border-fog-900 bg-fog-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-fog-800"
+              class="rounded-full border border-fog-900 bg-fog-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-fog-800 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
             >
               <LocaleText zh="查看详情" en="Open project" />
             </a>
@@ -61,7 +61,7 @@ const { projects } = Astro.props;
                 href={project.data.liveUrl}
                 target="_blank"
                 rel="noreferrer"
-                class="rounded-full border border-fog-300 bg-white/80 px-4 py-2.5 text-sm font-medium text-fog-700 transition hover:border-fog-500 hover:text-fog-900"
+                class="rounded-full border border-fog-300 bg-white/80 px-4 py-2.5 text-sm font-medium text-fog-700 transition hover:border-fog-500 hover:text-fog-900 dark:border-slate-700 dark:bg-slate-900/72 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
               >
                 <LocaleText zh="在线预览" en="Live preview" />
               </a>
