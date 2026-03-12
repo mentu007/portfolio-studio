@@ -1,0 +1,32 @@
+---
+import LocaleText from './LocaleText.astro';
+import { siteProfile } from '../data/site';
+---
+
+<footer class="section-shell mt-auto">
+  <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+    <div class="space-y-3">
+      <LocaleText zh="保持联系" en="Stay in touch" class="section-eyebrow" />
+      <p class="max-w-2xl text-sm leading-7 text-fog-700 md:text-base">
+        {siteProfile.email}
+      </p>
+      <div class="flex flex-wrap gap-3 text-sm text-fog-700">
+        {siteProfile.socials.map((item) => (
+          <a
+            class="rounded-full border border-fog-200 bg-white/75 px-4 py-2 transition hover:border-fog-400 hover:text-fog-900"
+            href={item.href}
+            target={item.href.startsWith('http') ? '_blank' : undefined}
+            rel={item.href.startsWith('http') ? 'noreferrer' : undefined}
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="text-right text-xs font-mono uppercase tracking-[0.32em] text-fog-500">
+      <p>Astro / Tailwind / React Islands</p>
+      <p class="mt-2">Static-first portfolio architecture</p>
+    </div>
+  </div>
+</footer>

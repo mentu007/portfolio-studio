@@ -1,0 +1,53 @@
+---
+---
+
+<button
+  type="button"
+  data-locale-toggle
+  class="inline-flex items-center gap-2 rounded-full border border-fog-300/80 bg-white/70 px-2 py-1 text-[0.72rem] font-medium text-fog-700 shadow-sm backdrop-blur"
+  aria-label="Toggle language"
+>
+  <span
+    data-locale-chip="zh"
+    class="rounded-full px-2.5 py-1 transition-colors duration-200 data-[active=true]:bg-fog-900 data-[active=true]:text-white"
+    data-active="true"
+  >
+    中文
+  </span>
+  <span
+    data-locale-chip="en"
+    class="rounded-full px-2.5 py-1 transition-colors duration-200 data-[active=true]:bg-fog-900 data-[active=true]:text-white"
+    data-active="false"
+  >
+    EN
+  </span>
+</button>
+
+<script is:inline>
+  const root = document.documentElement;
+  const button = document.querySelector('[data-locale-toggle]');
+  const chips = document.querySelectorAll('[data-locale-chip]');
+  const storageKey = 'portfolio-locale';
+
+  function applyLocale(locale) {
+    const next = locale === 'en' ? 'en' : 'zh';
+    root.dataset.locale = next;
+    root.lang = next === 'en' ? 'en-US' : 'zh-CN';
+
+    chips.forEach((chip) => {
+      chip.dataset.active = chip.dataset.localeChip === next ? 'true' : 'false';
+    });
+
+    try {
+      localStorage.setItem(storageKey, next);
+    } catch {}
+
+    window.dispatchEvent(new CustomEvent('portfolio:locale-change', { detail: next }));
+  }
+
+  applyLocale(root.dataset.locale === 'en' ? 'en' : 'zh');
+
+  button?.addEventListener('click', () => {
+    applyLocale(root.dataset.locale === 'en' ? 'zh' : 'en');
+  });
+</script>

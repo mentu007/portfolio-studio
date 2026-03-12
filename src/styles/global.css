@@ -1,0 +1,166 @@
+@import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource/ibm-plex-mono";
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "IBM Plex Sans Variable", "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", "Consolas", monospace;
+
+  --color-fog-50: #f8f9fb;
+  --color-fog-100: #f1f3f6;
+  --color-fog-150: #ebeef2;
+  --color-fog-200: #e1e5ea;
+  --color-fog-300: #d4d9e0;
+  --color-fog-400: #b9c1cc;
+  --color-fog-500: #9098a6;
+  --color-fog-600: #727b89;
+  --color-fog-700: #525c6c;
+  --color-fog-800: #303744;
+  --color-fog-900: #141922;
+}
+
+:root {
+  color-scheme: light;
+  --surface-strong: rgba(255, 255, 255, 0.78);
+  --surface-soft: rgba(255, 255, 255, 0.55);
+  --surface-stroke: rgba(114, 123, 137, 0.16);
+  --shadow-soft: 0 24px 80px rgba(20, 25, 34, 0.08);
+  --hero-glow: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.94) 0%, rgba(236, 239, 244, 0.48) 44%, rgba(236, 239, 244, 0) 72%);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply min-h-dvh bg-fog-50 font-sans text-fog-900 antialiased;
+}
+
+::selection {
+  background: rgba(185, 193, 204, 0.45);
+  color: #111827;
+}
+
+summary {
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+code {
+  font-family: var(--font-mono);
+}
+
+@layer base {
+  * {
+    @apply border-fog-200;
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  summary {
+    @apply outline-none;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible {
+    @apply ring-2 ring-fog-500 ring-offset-2 ring-offset-fog-50;
+  }
+}
+
+@layer components {
+  .site-frame {
+    @apply relative mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col gap-20 px-5 py-6 md:px-8 md:py-8 lg:px-12 lg:py-10;
+  }
+
+  .section-shell {
+    @apply rounded-[2rem] border border-[var(--surface-stroke)] bg-[var(--surface-soft)] p-5 shadow-[var(--shadow-soft)] backdrop-blur-xl md:p-8;
+  }
+
+  .surface-panel {
+    @apply rounded-[1.75rem] border border-[var(--surface-stroke)] bg-[var(--surface-strong)] shadow-[var(--shadow-soft)] backdrop-blur-xl;
+  }
+
+  .section-eyebrow {
+    @apply font-mono text-[0.68rem] uppercase tracking-[0.34em] text-fog-500;
+  }
+
+  .pixel-grid {
+    background-image:
+      linear-gradient(rgba(144, 152, 166, 0.11) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(144, 152, 166, 0.11) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(to bottom, rgba(20, 25, 34, 0.3), rgba(20, 25, 34, 0.08));
+  }
+
+  .ambient-ribbon {
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(233, 236, 241, 0.72) 44%, rgba(225, 229, 234, 0.32) 100%),
+      radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.85), transparent 58%);
+    animation: ambient-breathe 11s ease-in-out infinite;
+    filter: blur(18px);
+  }
+
+  .hero-card {
+    background:
+      var(--hero-glow),
+      linear-gradient(140deg, rgba(255, 255, 255, 0.88) 0%, rgba(243, 245, 248, 0.74) 48%, rgba(228, 232, 238, 0.48) 100%);
+  }
+
+  .locale-copy-zh,
+  .locale-copy-en {
+    @apply inline;
+  }
+
+  html[data-locale='zh'] .locale-copy-en {
+    @apply hidden;
+  }
+
+  html[data-locale='en'] .locale-copy-zh {
+    @apply hidden;
+  }
+
+  .prose-shell {
+    @apply prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-fog-900 prose-p:text-fog-700 prose-p:leading-8 prose-li:text-fog-700 prose-strong:text-fog-900 prose-a:text-fog-800 prose-a:decoration-fog-400 prose-code:rounded prose-code:bg-fog-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[0.9em] prose-code:text-fog-800 prose-code:before:content-[''] prose-code:after:content-[''] prose-pre:overflow-x-auto prose-pre:rounded-[1.25rem] prose-pre:border prose-pre:border-fog-200 prose-pre:bg-white prose-pre:px-0 prose-pre:py-0 prose-img:rounded-[1.5rem] prose-img:border prose-img:border-fog-200 prose-blockquote:border-fog-300 prose-blockquote:text-fog-700 dark:prose-invert;
+  }
+
+  .heading-anchor {
+    @apply ml-2 text-fog-400 no-underline opacity-0 transition-opacity duration-200;
+  }
+
+  .prose-shell :is(h1, h2, h3, h4):hover .heading-anchor {
+    @apply opacity-100;
+  }
+}
+
+@keyframes ambient-breathe {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    opacity: 0.92;
+    transform: translate3d(1.5%, -1%, 0) scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .ambient-ribbon {
+    animation: none;
+  }
+}

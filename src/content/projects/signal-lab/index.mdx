@@ -1,0 +1,46 @@
+---
+title: Signal Lab
+date: 2025-11-06
+summary: 面向 AI 工作流实验的轻量研究站，重点解决提示词版本管理、实验对比和结果回放的协同成本。
+tags:
+  - Astro
+  - AI
+  - TypeScript
+  - Content Strategy
+cover: ./cover.svg
+coverAlt: Signal Lab 项目封面
+repoUrl: https://github.com/your-name/signal-lab
+---
+
+## 为什么做
+
+团队在跑提示词实验时，最常见的问题不是模型能力，而是“哪一版配置产出了这个结果”经常说不清。Signal Lab 把 prompt、参数、样例输出和结论拆成结构化条目，避免实验记录停留在聊天记录里。
+
+## 设计重点
+
+### 可回放的实验切片
+
+每次实验都必须留下最小可复现切片：
+
+- 输入语料
+- 系统提示词
+- 模型参数
+- 输出结果
+- 主观评审备注
+
+### 写作式记录而不是表单式录入
+
+研究同学更愿意写 Markdown，而不是填一堆字段。因此我让结构化 frontmatter 承载关键元信息，正文负责讲清楚“这轮实验到底学到了什么”。
+
+```ts
+export type ExperimentNote = {
+  hypothesis: string;
+  promptVersion: string;
+  confidence: number;
+  decision: 'ship' | 'iterate' | 'drop';
+};
+```
+
+## 收获
+
+这个项目把“研究记录”从一次性对话变成了可复用资产，也证明了内容集合架构同样适合产品研发文档，而不只是博客。

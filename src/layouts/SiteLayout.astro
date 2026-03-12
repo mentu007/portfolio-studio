@@ -1,0 +1,67 @@
+---
+import SiteFooter from '../components/SiteFooter.astro';
+import { siteProfile } from '../data/site';
+import '../styles/global.css';
+import { withBase } from '../utils/paths';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title = siteProfile.seo.title,
+  description = siteProfile.seo.description,
+  image
+} = Astro.props;
+const pageTitle = title === siteProfile.seo.title ? title : `${title} | ${siteProfile.seo.title}`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
+const socialImage = image ? new URL(image, Astro.site ?? Astro.url).toString() : undefined;
+---
+
+<!doctype html>
+<html lang="zh-CN" data-locale="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    <link rel="icon" href={withBase('/favicon.ico')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {socialImage && <meta property="og:image" content={socialImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    {socialImage && <meta name="twitter:image" content={socialImage} />}
+    <slot name="head" />
+    <script is:inline>
+      try {
+        const locale = localStorage.getItem('portfolio-locale') === 'en' ? 'en' : 'zh';
+        document.documentElement.dataset.locale = locale;
+        document.documentElement.lang = locale === 'en' ? 'en-US' : 'zh-CN';
+      } catch {
+        document.documentElement.dataset.locale = 'zh';
+      }
+    </script>
+  </head>
+  <body>
+    <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div class="absolute inset-0 bg-[linear-gradient(180deg,#fbfcfd_0%,#f4f6f8_42%,#eef1f5_100%)]"></div>
+      <div class="pixel-grid absolute inset-0 opacity-70"></div>
+      <div class="ambient-ribbon absolute inset-x-[-10%] top-[-18%] h-[52vh]"></div>
+      <div class="absolute inset-x-[14%] top-[35%] h-[24vh] rounded-full bg-white/40 blur-3xl"></div>
+    </div>
+
+    <main class="site-frame">
+      <slot />
+      <SiteFooter />
+    </main>
+  </body>
+</html>

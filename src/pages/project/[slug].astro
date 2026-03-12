@@ -1,0 +1,56 @@
+---
+import { render } from 'astro:content';
+import LocaleText from '../../components/LocaleText.astro';
+import Prose from '../../components/Prose.astro';
+import ProjectHero from '../../components/ProjectHero.astro';
+import TocNav from '../../components/TocNav';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { siteProfile } from '../../data/site';
+import { buildHeadingTree } from '../../utils/headings';
+import { getProjects, resolveProjectVideo, type ProjectEntry } from '../../utils/projects';
+import { withBase } from '../../utils/paths';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project }
+  }));
+}
+
+const { project } = Astro.props as { project: ProjectEntry };
+const { Content, headings } = await render(project);
+const toc = buildHeadingTree(headings);
+const videoSrc = resolveProjectVideo(project);
+---
+
+<SiteLayout title={project.data.title} description={project.data.summary} image={project.data.cover.src}>
+  <div class="flex items-center justify-between gap-4">
+    <a
+      href={withBase('/')}
+      class="rounded-full border border-fog-300 bg-white/80 px-4 py-2.5 text-sm font-medium text-fog-700 transition hover:border-fog-500 hover:text-fog-900"
+    >
+      <LocaleText zh={siteProfile.ui.sections.backHome.zh} en={siteProfile.ui.sections.backHome.en} />
+    </a>
+    <p class="section-eyebrow">/{project.id}</p>
+  </div>
+
+  <ProjectHero project={project} videoSrc={videoSrc} />
+
+  <section class="grid gap-6 lg:grid-cols-[minmax(250px,0.32fr),minmax(0,1fr)] lg:items-start">
+    <TocNav
+      client:idle
+      items={toc}
+      title={siteProfile.ui.sections.toc}
+      openLabel={siteProfile.ui.sections.tocOpen}
+      closeLabel={siteProfile.ui.sections.tocClose}
+    />
+
+    <div class="section-shell">
+      <Prose>
+        <Content />
+      </Prose>
+    </div>
+  </section>
+</SiteLayout>

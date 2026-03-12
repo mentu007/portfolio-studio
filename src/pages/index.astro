@@ -1,17 +1,59 @@
 ---
+import GalleryFilter from '../components/GalleryFilter';
+import HeroBanner from '../components/HeroBanner.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import TimelineList from '../components/TimelineList.astro';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { siteProfile } from '../data/site';
+import { formatProjectDate, getProjects, getTagIndex } from '../utils/projects';
 
+const projects = await getProjects();
+const tags = getTagIndex(projects);
+const galleryProjects = projects.map((project) => ({
+  slug: project.id,
+  title: project.data.title,
+  summary: project.data.summary,
+  tags: project.data.tags,
+  date: formatProjectDate(project.data.date),
+  cover: {
+    src: project.data.cover.src,
+    width: project.data.cover.width,
+    height: project.data.cover.height,
+    alt: project.data.coverAlt
+  }
+}));
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<SiteLayout title={siteProfile.seo.title} description={siteProfile.seo.description}>
+  <HeroBanner projectCount={projects.length} tagCount={tags.length} />
+
+  <section id="timeline" class="space-y-6 md:space-y-8">
+    <SectionHeading
+      eyebrowZh="时间线视图"
+      eyebrowEn="Timeline View"
+      titleZh="按时间追踪完整项目脉络"
+      titleEn="Trace the work as a chronological system"
+      descriptionZh="按日期倒序浏览项目。每条记录都保留封面、摘要与技术标签，适合快速扫读。"
+      descriptionEn="Browse work in reverse chronological order with a concise cover, summary, and stack preview."
+    />
+    <TimelineList projects={projects} />
+  </section>
+
+  <section id="gallery" class="space-y-6 md:space-y-8">
+    <SectionHeading
+      eyebrowZh="画廊过滤视图"
+      eyebrowEn="Gallery View"
+      titleZh="用技术标签快速切片全部作品"
+      titleEn="Slice the portfolio by stack and capability"
+      descriptionZh="标签会从全部项目自动聚合。筛选时使用平滑重排动画，保持低噪音、高秩序的浏览感。"
+      descriptionEn="Tags are aggregated from the whole collection and filtered with smooth layout animation."
+    />
+    <GalleryFilter
+      client:visible
+      basePath={import.meta.env.BASE_URL}
+      projects={galleryProjects}
+      tags={tags}
+      labels={siteProfile.ui.gallery}
+    />
+  </section>
+</SiteLayout>

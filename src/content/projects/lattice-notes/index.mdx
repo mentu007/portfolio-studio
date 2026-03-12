@@ -1,0 +1,48 @@
+---
+title: Lattice Notes
+date: 2025-07-21
+summary: 一个把设计评审、实现决策与复盘笔记编织到同一知识网格中的个人知识库前端实验。
+tags:
+  - Vue
+  - Markdown
+  - Knowledge Base
+  - UI/UX
+cover: ./cover.svg
+coverAlt: Lattice Notes 项目封面
+liveUrl: https://example.com/lattice-notes
+---
+
+## 核心目标
+
+Lattice Notes 的目标很直接：不要让设计方案、开发约束和复盘结论分别躺在三个工具里。这个项目尝试用统一的阅读界面把它们编织成一张可搜索、可跳转、可追踪的网格。
+
+## 方法
+
+### 目录即关系
+
+我没有从数据库开始，而是先定义内容目录和连接规则。这样一来，内容本身就会暴露结构，站点只需要把这种结构渲染出来。
+
+### 弱化“页面”，强化“路径”
+
+阅读体验不是依靠单页堆内容完成的，而是依靠可靠的跳转路径、稳定的大纲和合适的信息切片完成的。
+
+## 体验细节
+
+- 主阅读区保持舒适行宽
+- 导航与正文采用 1:3 的稳定比例
+- 引用块、代码块和图片都使用同一套边框与节奏
+
+```vue
+<template>
+  <aside class="toc-panel">
+    <slot name="toc" />
+  </aside>
+  <article class="doc-body">
+    <slot />
+  </article>
+</template>
+```
+
+## 结论
+
+这次实验让我进一步确认：对于重内容、轻业务的个人站点，静态生成不是妥协，而是更高级的工程取舍。
