@@ -115,8 +115,8 @@ code {
 @layer components {
   .site-frame {
     @apply relative mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col gap-20 px-5 py-6 md:px-8 md:py-8 lg:px-12 lg:py-10;
-    padding-inline-end: calc(1.25rem + var(--sidebar-offset));
-    transition: padding-inline-end 320ms ease;
+    padding-inline-start: calc(1.25rem + var(--sidebar-offset));
+    transition: padding-inline-start 320ms ease;
   }
 
   .section-shell {
@@ -187,13 +187,13 @@ code {
 
 @media (min-width: 768px) {
   .site-frame {
-    padding-inline-end: calc(2rem + var(--sidebar-offset));
+    padding-inline-start: calc(2rem + var(--sidebar-offset));
   }
 }
 
 @media (min-width: 1024px) {
   .site-frame {
-    padding-inline-end: calc(3rem + var(--sidebar-offset));
+    padding-inline-start: calc(3rem + var(--sidebar-offset));
   }
 }
 

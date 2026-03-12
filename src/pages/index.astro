@@ -2,14 +2,28 @@
 import DynamicSidebar from '../components/DynamicSidebar';
 import GalleryFilter from '../components/GalleryFilter';
 import HeroBanner from '../components/HeroBanner.astro';
+import CompactTimeline from '../components/CompactTimeline';
 import SectionHeading from '../components/SectionHeading.astro';
-import TimelineList from '../components/TimelineList.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { siteProfile } from '../data/site';
 import { formatProjectDate, getProjects, getTagIndex } from '../utils/projects';
 
 const projects = await getProjects();
 const tags = getTagIndex(projects);
+const timelineItems = projects.map((project) => ({
+  slug: project.id,
+  title: project.data.title,
+  summary: project.data.summary,
+  tags: project.data.tags,
+  date: formatProjectDate(project.data.date),
+  cover: {
+    src: project.data.cover.src,
+    width: project.data.cover.width,
+    height: project.data.cover.height,
+    alt: project.data.coverAlt
+  },
+  liveUrl: project.data.liveUrl
+}));
 const galleryProjects = projects.map((project) => ({
   slug: project.id,
   title: project.data.title,
@@ -38,7 +52,7 @@ const galleryProjects = projects.map((project) => ({
       descriptionZh="按日期倒序浏览项目。每条记录都保留封面、摘要与技术标签，适合快速扫读。"
       descriptionEn="Browse work in reverse chronological order with a concise cover, summary, and stack preview."
     />
-    <TimelineList projects={projects} />
+    <CompactTimeline client:load items={timelineItems} basePath={import.meta.env.BASE_URL} />
   </section>
 
   <section id="gallery" class="space-y-6 md:space-y-8">

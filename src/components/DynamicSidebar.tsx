@@ -343,10 +343,10 @@ export default function DynamicSidebar(props: Props) {
   const themeLabel = theme === 'dark' ? copy.themeLight[locale] : copy.themeDark[locale];
 
   return (
-    <div className="pointer-events-none fixed inset-y-4 right-3 z-50 flex items-center justify-end sm:right-4">
+    <div className="pointer-events-none fixed inset-y-4 left-3 z-50 flex items-center justify-start sm:left-4">
       <motion.aside
         ref={dockRef}
-        animate={{ x: collapsed ? hiddenOffset : 0 }}
+        animate={{ x: collapsed ? -hiddenOffset : 0 }}
         transition={motionTransition}
         className="pointer-events-auto relative h-[calc(100dvh-2rem)] w-[min(19rem,calc(100vw-0.75rem))] max-w-[19rem] sm:w-[19rem]"
       >
@@ -355,7 +355,7 @@ export default function DynamicSidebar(props: Props) {
           onClick={() => setCollapsed((value) => !value)}
           aria-label={copy.toggleDock[locale]}
           aria-expanded={!collapsed}
-          className="absolute left-0 top-1/2 z-20 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl border border-white/65 bg-white/82 text-slate-800 shadow-[0_20px_40px_rgba(15,23,42,0.14)] backdrop-blur-md transition hover:bg-white dark:border-slate-700/80 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:bg-slate-900"
+          className="absolute right-0 top-1/2 z-20 flex h-14 w-14 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl border border-white/65 bg-white/82 text-slate-800 shadow-[0_20px_40px_rgba(15,23,42,0.14)] backdrop-blur-md transition hover:bg-white dark:border-slate-700/80 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:bg-slate-900"
         >
           <Code2 className="h-5 w-5" strokeWidth={1.85} />
         </button>

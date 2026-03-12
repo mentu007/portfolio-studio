@@ -12,76 +12,103 @@ interface Props {
 
 const { project, videoSrc } = Astro.props;
 const videoType = videoSrc?.endsWith('.webm') ? 'video/webm' : 'video/mp4';
+const hasLinks = Boolean(project.data.repoUrl || project.data.liveUrl);
 ---
 
-<section class="surface-panel overflow-hidden px-5 py-5 md:px-8 md:py-8">
-  <div class="grid gap-8 lg:grid-cols-[minmax(0,0.86fr),minmax(360px,1fr)] lg:items-start">
-    <div class="space-y-5">
-      <p class="section-eyebrow">{formatProjectDate(project.data.date, 'full')}</p>
-      <h1 class="max-w-3xl text-3xl font-semibold tracking-[-0.05em] text-fog-900 dark:text-slate-50 md:text-5xl">
-        {project.data.title}
-      </h1>
-      <p class="max-w-2xl text-sm leading-7 text-fog-700 dark:text-slate-300 md:text-base">{project.data.summary}</p>
+<section class="relative overflow-hidden rounded-[2.15rem] border border-slate-900/60 bg-[#02050d] text-white shadow-[0_38px_120px_rgba(2,6,23,0.52)]">
+  <div class="absolute inset-0">
+    {videoSrc ? (
+      <video
+        class="h-full w-full object-cover opacity-75"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        poster={project.data.cover.src}
+        aria-hidden="true"
+      >
+        <source src={videoSrc} type={videoType} />
+      </video>
+    ) : (
+      <>
+        <Image
+          src={project.data.cover}
+          alt={project.data.coverAlt}
+          widths={[960, 1440, 1920]}
+          sizes="100vw"
+          class="absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-80"
+        />
+        <Image
+          src={project.data.cover}
+          alt=""
+          widths={[960, 1440, 1920]}
+          sizes="100vw"
+          class="absolute inset-0 h-full w-full scale-[1.18] object-cover opacity-30 blur-2xl"
+        />
+      </>
+    )}
 
-      <div class="flex flex-wrap gap-2">
-        {project.data.tags.map((tag) => (
-          <span class="rounded-full border border-fog-200 bg-white/85 px-3 py-1 text-xs font-medium text-fog-700 dark:border-slate-700 dark:bg-slate-900/72 dark:text-slate-300">
-            {tag}
+    <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.97)_0%,rgba(2,6,23,0.93)_30%,rgba(2,6,23,0.66)_58%,rgba(2,6,23,0.22)_100%)]" />
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(56,189,248,0.18),transparent_28%),radial-gradient(circle_at_78%_24%,rgba(248,113,113,0.18),transparent_24%),radial-gradient(circle_at_74%_78%,rgba(255,255,255,0.08),transparent_28%)]" />
+    <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.1)_0%,rgba(2,6,23,0.18)_38%,rgba(2,6,23,0.82)_100%)] lg:hidden" />
+    <div class="absolute inset-0 ring-1 ring-inset ring-white/8" />
+  </div>
+
+  <div class="relative grid min-h-[520px] gap-8 px-6 py-8 md:min-h-[580px] md:px-8 md:py-10 lg:grid-cols-[minmax(0,0.46fr),minmax(0,0.54fr)] lg:px-10 lg:py-12">
+    <div class="flex max-w-xl flex-col justify-between gap-8 lg:gap-10">
+      <div class="space-y-6">
+        <div class="flex flex-wrap gap-3 text-[0.68rem] font-mono uppercase tracking-[0.28em] text-white/62">
+          <span class="rounded-full border border-white/12 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
+            {formatProjectDate(project.data.date, 'full')}
           </span>
-        ))}
+          <span class="rounded-full border border-white/12 bg-white/10 px-3 py-1.5 backdrop-blur-sm">/{project.id}</span>
+        </div>
+
+        <div class="space-y-4">
+          <h1 class="max-w-3xl text-4xl font-semibold tracking-[-0.055em] text-white md:text-5xl lg:text-[4rem] lg:leading-[0.96]">
+            {project.data.title}
+          </h1>
+          <p class="max-w-xl text-sm leading-7 text-slate-200/85 md:text-base md:leading-8">{project.data.summary}</p>
+        </div>
+
+        <div class="flex flex-wrap gap-2.5">
+          {project.data.tags.map((tag) => (
+            <span class="rounded-full border border-white/12 bg-white/10 px-3 py-1 text-xs font-medium text-white/85 backdrop-blur-sm">
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div class="flex flex-wrap gap-3 pt-2">
-        {project.data.repoUrl && (
-          <a
-            href={project.data.repoUrl}
-            target="_blank"
-            rel="noreferrer"
-            class="rounded-full border border-fog-900 bg-fog-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-fog-800 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
-          >
-            <LocaleText zh={siteProfile.ui.sections.repository.zh} en={siteProfile.ui.sections.repository.en} />
-          </a>
-        )}
-        {project.data.liveUrl && (
-          <a
-            href={project.data.liveUrl}
-            target="_blank"
-            rel="noreferrer"
-            class="rounded-full border border-fog-300 bg-white/80 px-4 py-2.5 text-sm font-medium text-fog-700 transition hover:border-fog-500 hover:text-fog-900 dark:border-slate-700 dark:bg-slate-900/72 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
-          >
-            <LocaleText zh={siteProfile.ui.sections.liveDemo.zh} en={siteProfile.ui.sections.liveDemo.en} />
-          </a>
-        )}
-      </div>
-    </div>
-
-    <div class="overflow-hidden rounded-[1.75rem] border border-fog-200 bg-white dark:border-slate-700 dark:bg-slate-950">
-      {videoSrc ? (
-        <video
-          class="aspect-video h-full w-full bg-fog-950 object-cover"
-          controls
-          preload="metadata"
-          poster={project.data.cover.src}
-        >
-          <source src={videoSrc} type={videoType} />
-        </video>
-      ) : (
-        <div class="grid gap-5 p-5 md:p-6">
-          <Image
-            src={project.data.cover}
-            alt={project.data.coverAlt}
-            widths={[720, 1280]}
-            sizes="(max-width: 1024px) 100vw, 48vw"
-            class="aspect-video h-full w-full rounded-[1.25rem] object-cover"
-          />
-          <LocaleText
-            zh={siteProfile.ui.sections.videoFallback.zh}
-            en={siteProfile.ui.sections.videoFallback.en}
-            tag="p"
-            class="text-sm leading-7 text-fog-600 dark:text-slate-400"
-          />
+      {hasLinks && (
+        <div class="flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-5 text-sm font-medium text-white/82">
+          {project.data.repoUrl && (
+            <a
+              href={project.data.repoUrl}
+              target="_blank"
+              rel="noreferrer"
+              class="inline-flex items-center gap-2 border-b border-white/18 pb-1 transition hover:border-white/70 hover:text-white"
+            >
+              <LocaleText zh={siteProfile.ui.sections.repository.zh} en={siteProfile.ui.sections.repository.en} />
+              <span aria-hidden="true">-&gt;</span>
+            </a>
+          )}
+          {project.data.liveUrl && (
+            <a
+              href={project.data.liveUrl}
+              target="_blank"
+              rel="noreferrer"
+              class="inline-flex items-center gap-2 border-b border-white/18 pb-1 transition hover:border-white/70 hover:text-white"
+            >
+              <LocaleText zh={siteProfile.ui.sections.liveDemo.zh} en={siteProfile.ui.sections.liveDemo.en} />
+              <span aria-hidden="true">-&gt;</span>
+            </a>
+          )}
         </div>
       )}
     </div>
+
+    <div class="hidden lg:block" aria-hidden="true" />
   </div>
 </section>
