@@ -41,7 +41,6 @@ type ObservedHeading = {
 
 const TOC_DEBUG_STORAGE_KEY = 'portfolioTocDebug';
 const ACTIVE_LINE_PX = 96;
-const SCROLL_IDLE_MS = 120;
 const MAX_PENDING_MS = 1600;
 const BOTTOM_THRESHOLD_PX = 4;
 const SUBHEADING_TAKEOVER_PX = ACTIVE_LINE_PX / 4;
@@ -295,20 +294,11 @@ export default function DynamicSidebar(props: Props) {
   const dockRef = useRef<HTMLElement | null>(null);
   const observedHeadingsRef = useRef<ObservedHeading[]>([]);
   const pendingScrollTargetRef = useRef<string | null>(null);
-  const scrollIdleTimeoutRef = useRef<number | null>(null);
   const maxPendingTimeoutRef = useRef<number | null>(null);
-  const activeHeadingFrameRef = useRef<number | null>(null);
   const tocItems = props.mode === 'detail' ? props.tocItems : [];
   const motionTransition = prefersReducedMotion
     ? { duration: 0 }
     : { type: 'spring' as const, stiffness: 260, damping: 28, mass: 0.9 };
-
-  function clearScrollIdleTimer() {
-    if (scrollIdleTimeoutRef.current !== null) {
-      window.clearTimeout(scrollIdleTimeoutRef.current);
-      scrollIdleTimeoutRef.current = null;
-    }
-  }
 
   function clearMaxPendingTimeout() {
     if (maxPendingTimeoutRef.current !== null) {
@@ -319,15 +309,7 @@ export default function DynamicSidebar(props: Props) {
 
   function clearPendingScrollTarget() {
     pendingScrollTargetRef.current = null;
-    clearScrollIdleTimer();
     clearMaxPendingTimeout();
-  }
-
-  function clearPendingActiveHeadingFrame() {
-    if (activeHeadingFrameRef.current !== null) {
-      window.cancelAnimationFrame(activeHeadingFrameRef.current);
-      activeHeadingFrameRef.current = null;
-    }
   }
 
   const syncDockLayout = useEffectEvent(() => {
@@ -344,123 +326,27 @@ export default function DynamicSidebar(props: Props) {
     root.style.setProperty('--sidebar-offset', `${width + 28}px`);
   });
 
-  const computeActiveHeading = useEffectEvent((reason: string) => {
-    const headings = observedHeadingsRef.current;
-
-    if (headings.length === 0) {
-      return;
-    }
-
+  const syncActiveHeading = useEffectEvent((entries: IntersectionObserverEntry[]) => {
     if (pendingScrollTargetRef.current) {
-      debugToc('sync skipped while pending', {
-        reason,
-        pendingTargetId: pendingScrollTargetRef.current,
-        scrollY: Number(window.scrollY.toFixed(1))
-      });
       return;
     }
 
-    const remainingScroll = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
-    const positions = headings.map((heading) => ({
-      id: heading.id,
-      depth: heading.depth,
-      top: heading.element.getBoundingClientRect().top
-    }));
+    const visible = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
 
-    if (positions.length === 0) {
+    if (visible[0]) {
+      setActiveId(visible[0].target.id);
       return;
     }
 
-    let nextActiveId = '';
+    const crossed = entries
+      .filter((entry) => entry.boundingClientRect.top < ACTIVE_LINE_PX)
+      .sort((left, right) => right.boundingClientRect.top - left.boundingClientRect.top);
 
-    if (remainingScroll <= BOTTOM_THRESHOLD_PX) {
-      nextActiveId = positions[positions.length - 1]?.id ?? '';
-    } else {
-      const topLevelPositions = positions.filter((item) => item.depth <= 2);
-      const crossedTopLevels = topLevelPositions.filter((item) => item.top <= ACTIVE_LINE_PX);
-      const topLevelActive =
-        crossedTopLevels[crossedTopLevels.length - 1] ??
-        topLevelPositions[0] ??
-        positions[0];
-
-      if (!topLevelActive) {
-        return;
-      }
-
-      nextActiveId = topLevelActive.id;
-
-      if (topLevelActive.depth >= 2) {
-        const currentIndex = positions.findIndex((item) => item.id === topLevelActive.id);
-        const nextTopLevelIndex = positions.findIndex((item, index) => index > currentIndex && item.depth <= 2);
-        const sectionEndIndex = nextTopLevelIndex === -1 ? positions.length : nextTopLevelIndex;
-        const descendantPositions = positions.slice(currentIndex + 1, sectionEndIndex);
-        const crossedDescendants = descendantPositions.filter(
-          (item) => item.depth > topLevelActive.depth && item.top <= SUBHEADING_TAKEOVER_PX
-        );
-        const deepestDescendant = crossedDescendants[crossedDescendants.length - 1];
-
-        if (deepestDescendant) {
-          nextActiveId = deepestDescendant.id;
-        }
-      }
+    if (crossed[0]) {
+      setActiveId(crossed[0].target.id);
     }
-
-    if (!nextActiveId) {
-      return;
-    }
-
-    debugToc('computed active', {
-      reason,
-      nextActiveId,
-      remainingScroll: Number(remainingScroll.toFixed(1)),
-      scrollY: Number(window.scrollY.toFixed(1)),
-      headings: positions.map((item) => ({
-        id: item.id,
-        depth: item.depth,
-        top: Number(item.top.toFixed(1))
-      }))
-    });
-
-    setActiveId((current) => (current === nextActiveId ? current : nextActiveId));
-  });
-
-  const scheduleActiveHeadingSync = useEffectEvent((reason: string) => {
-    if (activeHeadingFrameRef.current !== null) {
-      return;
-    }
-
-    activeHeadingFrameRef.current = window.requestAnimationFrame(() => {
-      activeHeadingFrameRef.current = null;
-      computeActiveHeading(reason);
-    });
-  });
-
-  const releasePendingScrollTarget = useEffectEvent((reason: string) => {
-    const pendingTargetId = pendingScrollTargetRef.current;
-
-    if (!pendingTargetId) {
-      return;
-    }
-
-    debugToc('pending released', {
-      reason,
-      pendingTargetId,
-      scrollY: Number(window.scrollY.toFixed(1))
-    });
-
-    clearPendingScrollTarget();
-    scheduleActiveHeadingSync(`pending:${reason}`);
-  });
-
-  const resetPendingScrollIdleTimer = useEffectEvent((reason: string) => {
-    if (!pendingScrollTargetRef.current) {
-      return;
-    }
-
-    clearScrollIdleTimer();
-    scrollIdleTimeoutRef.current = window.setTimeout(() => {
-      releasePendingScrollTarget(`idle:${reason}`);
-    }, prefersReducedMotion ? 0 : SCROLL_IDLE_MS);
   });
 
   const holdPendingScrollTarget = useEffectEvent((id: string) => {
@@ -470,7 +356,6 @@ export default function DynamicSidebar(props: Props) {
     });
 
     pendingScrollTargetRef.current = id;
-    clearScrollIdleTimer();
     clearMaxPendingTimeout();
 
     maxPendingTimeoutRef.current = window.setTimeout(() => {
@@ -482,39 +367,24 @@ export default function DynamicSidebar(props: Props) {
         pendingTargetId: id,
         scrollY: Number(window.scrollY.toFixed(1))
       });
-      releasePendingScrollTarget('timeout');
+      clearPendingScrollTarget();
     }, prefersReducedMotion ? 0 : MAX_PENDING_MS);
   });
 
-  const handleWindowScroll = useEffectEvent(() => {
-    if (pendingScrollTargetRef.current) {
-      resetPendingScrollIdleTimer('scroll');
-      return;
-    }
-
-    scheduleActiveHeadingSync('scroll');
-  });
-
   const handleWindowResize = useEffectEvent(() => {
-    if (pendingScrollTargetRef.current) {
-      resetPendingScrollIdleTimer('resize');
-    }
-
-    scheduleActiveHeadingSync('resize');
+    syncDockLayout();
   });
 
   const handleHashChange = useEffectEvent(() => {
     const hashId = readHashId(window.location.hash);
 
     if (!hashId) {
-      scheduleActiveHeadingSync('hashchange:empty');
       return;
     }
 
     const hasTarget = observedHeadingsRef.current.some((heading) => heading.id === hashId);
 
     if (!hasTarget) {
-      scheduleActiveHeadingSync('hashchange:missing');
       return;
     }
 
@@ -523,7 +393,6 @@ export default function DynamicSidebar(props: Props) {
       scrollY: Number(window.scrollY.toFixed(1))
     });
     setActiveId(hashId);
-    scheduleActiveHeadingSync('hashchange');
   });
 
   useEffect(() => {
@@ -535,7 +404,7 @@ export default function DynamicSidebar(props: Props) {
   useEffect(() => {
     syncDockLayout();
 
-    window.addEventListener('resize', syncDockLayout);
+    window.addEventListener('resize', handleWindowResize);
 
     const resizeObserver =
       dockRef.current &&
@@ -549,7 +418,7 @@ export default function DynamicSidebar(props: Props) {
 
     return () => {
       resizeObserver?.disconnect();
-      window.removeEventListener('resize', syncDockLayout);
+      window.removeEventListener('resize', handleWindowResize);
       document.documentElement.style.setProperty('--sidebar-offset', '0px');
     };
   }, [collapsed]);
@@ -557,7 +426,6 @@ export default function DynamicSidebar(props: Props) {
   useEffect(
     () => () => {
       clearPendingScrollTarget();
-      clearPendingActiveHeadingFrame();
     },
     []
   );
@@ -566,7 +434,6 @@ export default function DynamicSidebar(props: Props) {
     if (props.mode !== 'detail' || tocItems.length === 0) {
       observedHeadingsRef.current = [];
       clearPendingScrollTarget();
-      clearPendingActiveHeadingFrame();
       setActiveId('');
       return;
     }
@@ -602,18 +469,25 @@ export default function DynamicSidebar(props: Props) {
     });
 
     setActiveId(initialHeading?.id ?? '');
-    scheduleActiveHeadingSync(initialHeading ? 'init:hash' : 'init');
 
-    window.addEventListener('scroll', handleWindowScroll, { passive: true });
-    window.addEventListener('resize', handleWindowResize);
+    const elements = headings.map((heading) => heading.element);
+
+    const observer = new IntersectionObserver(
+      (entries) => syncActiveHeading(entries),
+      {
+        rootMargin: '-14% 0px -68% 0px',
+        threshold: [0, 0.2, 0.4, 1]
+      }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+
     window.addEventListener('hashchange', handleHashChange);
 
     return () => {
       observedHeadingsRef.current = [];
       clearPendingScrollTarget();
-      clearPendingActiveHeadingFrame();
-      window.removeEventListener('scroll', handleWindowScroll);
-      window.removeEventListener('resize', handleWindowResize);
+      observer.disconnect();
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, [props.mode, tocItems]);
@@ -665,12 +539,6 @@ export default function DynamicSidebar(props: Props) {
       block: 'start'
     });
 
-    window.requestAnimationFrame(() => {
-      if (pendingScrollTargetRef.current === id) {
-        resetPendingScrollIdleTimer('navigate');
-      }
-    });
-
     if (window.innerWidth < 1024) {
       setCollapsed(true);
     }
@@ -693,106 +561,83 @@ export default function DynamicSidebar(props: Props) {
           aria-expanded={!collapsed}
           className="absolute right-0 top-1/2 z-20 flex h-14 w-14 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl border border-white/65 bg-white/82 text-slate-800 shadow-[0_20px_40px_rgba(15,23,42,0.14)] backdrop-blur-md transition hover:bg-white dark:border-slate-700/80 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:bg-slate-900"
         >
-          <Code2 className="h-5 w-5" strokeWidth={1.85} />
+          <ChevronLeft
+            className="h-5 w-5 transition-transform duration-200"
+            style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}
+            strokeWidth={1.8}
+          />
         </button>
 
-        <div className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/55 bg-white/70 shadow-[0_34px_80px_rgba(15,23,42,0.16)] backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/70 dark:shadow-[0_34px_80px_rgba(2,6,23,0.48)]">
-          <div className="border-b border-slate-200/70 px-5 pb-4 pt-5 dark:border-slate-700/80">
+        <div className="flex h-full flex-col gap-5 overflow-y-auto rounded-[1.75rem] border border-white/60 bg-white/72 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-950/58">
+          <div className="flex items-center justify-between">
             <DockSectionTitle label={copy.dock[locale]} />
-            <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+            <span className="text-[0.65rem] font-medium uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
               {props.mode === 'home' ? copy.home[locale] : copy.detail[locale]}
-            </p>
+            </span>
           </div>
 
-          <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5 sm:px-5">
-            {props.mode === 'home' ? (
-              <>
-                <section className="space-y-3">
-                  <DockSectionTitle label={copy.system[locale]} />
-                  <div className="flex gap-3">
-                    <ControlButton
-                      icon={theme === 'dark' ? SunMedium : MoonStar}
-                      label={themeLabel}
-                      onClick={handleThemeToggle}
-                    />
-                    <ControlButton
-                      icon={Languages}
-                      label={copy.language[locale]}
-                      badge={locale === 'en' ? 'EN' : '中'}
-                      onClick={handleLocaleToggle}
-                    />
-                  </div>
-                </section>
-
-                <section className="space-y-3">
-                  <DockSectionTitle label={copy.stats[locale]} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <MetricCell label={copy.projects[locale]} value={props.projectCount.toString().padStart(2, '0')} />
-                    <MetricCell label={copy.tags[locale]} value={props.tagCount.toString().padStart(2, '0')} />
-                  </div>
-                </section>
-
-                <section className="space-y-3">
-                  <DockSectionTitle label={copy.navigation[locale]} />
-                  <div className="space-y-3">
-                    <JumpButton icon={Clock3} label={copy.timeline[locale]} onClick={() => scrollToSection('timeline')} />
-                    <JumpButton icon={LayoutGrid} label={copy.gallery[locale]} onClick={() => scrollToSection('gallery')} />
-                  </div>
-                </section>
-              </>
-            ) : (
-              <>
-                <section className="space-y-3">
-                  <DockSectionTitle label={copy.navigation[locale]} />
-                  <a
-                    href={props.homeHref}
-                    className="flex w-full items-center justify-between gap-3 rounded-[1.35rem] border border-slate-900 bg-slate-900 px-4 py-3.5 text-sm font-medium text-white transition hover:bg-slate-800 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
-                  >
-                    <span className="flex items-center gap-3">
-                      <ChevronLeft className="h-4 w-4" strokeWidth={1.8} />
-                      <span>{copy.backHome[locale]}</span>
-                    </span>
-                    <span className="text-[0.68rem] uppercase tracking-[0.22em] text-white/65 dark:text-slate-500">
-                      Home
-                    </span>
-                  </a>
-                </section>
-
-                <section className="space-y-3">
-                  <DockSectionTitle label={copy.system[locale]} />
-                  <div className="flex gap-3">
-                    <ControlButton
-                      icon={theme === 'dark' ? SunMedium : MoonStar}
-                      label={themeLabel}
-                      onClick={handleThemeToggle}
-                    />
-                  </div>
-                </section>
-
-                <section className="space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <DockSectionTitle label={copy.outline[locale]} />
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/60 bg-white/72 text-slate-600 dark:border-slate-700/80 dark:bg-slate-950/58 dark:text-slate-300">
-                      <ListTree className="h-4 w-4" strokeWidth={1.8} />
-                    </span>
-                  </div>
-
-                  {props.tocItems.length > 0 ? (
-                    <TocBranch
-                      items={props.tocItems}
-                      activeId={activeId}
-                      onNavigate={handleTocNavigation}
-                      locale={locale}
-                    />
-                  ) : (
-                    <p className="rounded-[1.25rem] border border-dashed border-slate-300/90 px-4 py-4 text-sm leading-7 text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                      {copy.emptyOutline[locale]}
-                    </p>
-                  )}
-                </section>
-              </>
-            )}
+          <div className="flex flex-wrap gap-3">
+            <ControlButton
+              icon={theme === 'dark' ? SunMedium : MoonStar}
+              label={themeLabel}
+              onClick={handleThemeToggle}
+            />
+            <ControlButton
+              icon={Languages}
+              label={copy.language[locale]}
+              onClick={handleLocaleToggle}
+            />
           </div>
+
+          {props.mode === 'home' && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <MetricCell label={copy.projects[locale]} value={String(props.projectCount).padStart(2, '0')} />
+                <MetricCell label={copy.tags[locale]} value={String(props.tagCount).padStart(2, '0')} />
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <DockSectionTitle label={copy.navigation[locale]} />
+                <JumpButton
+                  icon={Clock3}
+                  label={copy.timeline[locale]}
+                  onClick={() => scrollToSection('timeline')}
+                />
+                <JumpButton
+                  icon={LayoutGrid}
+                  label={copy.gallery[locale]}
+                  onClick={() => scrollToSection('gallery')}
+                />
+              </div>
+            </>
+          )}
+
+          {props.mode === 'detail' && (
+            <>
+              <div className="flex flex-col gap-3">
+                <DockSectionTitle label={copy.navigation[locale]} />
+                <JumpButton
+                  icon={ChevronLeft}
+                  label={copy.backHome[locale]}
+                  onClick={() => {
+                    window.location.href = props.homeHref;
+                  }}
+                />
+              </div>
+
+              {tocItems.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <DockSectionTitle label={copy.outline[locale]} />
+                  <TocBranch
+                    items={tocItems}
+                    activeId={activeId}
+                    onNavigate={handleTocNavigation}
+                    locale={locale}
+                  />
+                </div>
+              )}
+            </>
+          )}
         </div>
       </motion.aside>
     </div>

@@ -31,6 +31,8 @@ const socialImage = image ? new URL(image, Astro.site ?? Astro.url).toString() :
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
     <link rel="icon" href={withBase('/favicon.ico')} />
+    <link rel="preconnect" href={Astro.site?.origin ?? 'https://example.github.io'} />
+    <link rel="dns-prefetch" href={Astro.site?.origin ?? 'https://example.github.io'} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
@@ -55,9 +57,14 @@ const socialImage = image ? new URL(image, Astro.site ?? Astro.url).toString() :
         document.documentElement.lang = locale === 'en' ? 'en-US' : 'zh-CN';
         document.documentElement.dataset.theme = theme;
         document.documentElement.classList.toggle('dark', theme === 'dark');
+
+        const sidebarWidth = 304;
+        const sidebarOffset = window.innerWidth >= 1180 ? `${sidebarWidth + 28}px` : '0px';
+        document.documentElement.style.setProperty('--sidebar-offset', sidebarOffset);
       } catch {
         document.documentElement.dataset.locale = 'zh';
         document.documentElement.dataset.theme = 'light';
+        document.documentElement.style.setProperty('--sidebar-offset', '0px');
       }
     </script>
   </head>

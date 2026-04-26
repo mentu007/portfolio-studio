@@ -40,7 +40,7 @@ const galleryProjects = projects.map((project) => ({
 ---
 
 <SiteLayout title={siteProfile.seo.title} description={siteProfile.seo.description}>
-  <DynamicSidebar client:load mode="home" projectCount={projects.length} tagCount={tags.length} />
+  <DynamicSidebar client:idle mode="home" projectCount={projects.length} tagCount={tags.length} />
   <HeroBanner projectCount={projects.length} tagCount={tags.length} />
 
   <section id="timeline" class="space-y-6 md:space-y-8">
@@ -52,7 +52,7 @@ const galleryProjects = projects.map((project) => ({
       descriptionZh="按日期倒序浏览项目。每条记录都保留封面、摘要与技术标签，适合快速扫读。"
       descriptionEn="Browse work in reverse chronological order with a concise cover, summary, and stack preview."
     />
-    <CompactTimeline client:load items={timelineItems} basePath={import.meta.env.BASE_URL} />
+    <CompactTimeline client:visible items={timelineItems} basePath={import.meta.env.BASE_URL} />
   </section>
 
   <section id="gallery" class="space-y-6 md:space-y-8">
