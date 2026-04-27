@@ -6,7 +6,10 @@ export type LocalizedText = {
 };
 
 export const siteProfile = {
-  name: '刘良君 / Jesse',
+  name: {
+    zh: '刘良君',
+    en: 'Jesse'
+  },
   location: 'Guangzhou, Guangdong',
   tagline: {
     zh: '能够独立完成架构设计与技术选型，具备产品思维与 UI 设计审美，能够从用户体验角度优化产品交互。',
