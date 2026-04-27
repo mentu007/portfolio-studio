@@ -52,15 +52,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     build: {
-      cssMinify: true,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom'],
-            'motion': ['motion/react'],
-          }
-        }
-      }
+      cssMinify: true
     }
   }
 });
