@@ -15,7 +15,7 @@ const { projectCount = 0, tagCount = 0 } = Astro.props;
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <p class="section-eyebrow">{siteProfile.location}</p>
-        <h1 class="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.06em] text-fog-900 dark:text-slate-50 md:text-6xl lg:text-[5.4rem]">
+        <h1 class="mt-3 max-w-4xl text-[2.65rem] font-semibold tracking-[-0.05em] text-fog-900 dark:text-slate-50 md:text-5xl lg:text-[4.25rem]">
           {siteProfile.name}
         </h1>
       </div>
@@ -30,12 +30,6 @@ const { projectCount = 0, tagCount = 0 } = Astro.props;
       en={siteProfile.tagline.en}
       tag="p"
       class="max-w-3xl text-lg leading-8 text-fog-800 dark:text-slate-200 md:text-2xl md:leading-10"
-    />
-    <LocaleText
-      zh={siteProfile.intro.zh}
-      en={siteProfile.intro.en}
-      tag="p"
-      class="max-w-2xl text-sm leading-7 text-fog-700 dark:text-slate-300 md:text-base"
     />
 
     <div class="flex flex-wrap gap-3">

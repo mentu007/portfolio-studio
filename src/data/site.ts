@@ -6,15 +6,11 @@ export type LocalizedText = {
 };
 
 export const siteProfile = {
-  name: '刘良君',
+  name: '刘良君 / Jesse',
   location: 'Guangzhou, Guangdong',
   tagline: {
-    zh: '聚焦前端体验、产品表达与可落地实现，把想法打磨成清晰、稳定、可分享的数字作品。',
-    en: 'Focused on frontend experience, product storytelling, and practical implementation that turns ideas into clear, stable, shareable digital work.'
-  },
-  intro: {
-    zh: '这里会逐步整理我在前端开发、界面实现与产品原型上的实践记录。当前站点已完成基础发布，后续会持续补充真实项目、实现思路与复盘内容。',
-    en: 'This site will gradually collect my work across frontend development, interface implementation, and product prototyping. The foundation is live now, with real projects, implementation notes, and retrospectives to be added over time.'
+    zh: '能够独立完成架构设计与技术选型，具备产品思维与 UI 设计审美，能够从用户体验角度优化产品交互。',
+    en: 'Able to independently handle architecture design and technical selection, with product thinking and UI design sensibility to improve interaction from the user experience perspective.'
   },
   email: '2621082160@qq.com',
   socials: [
