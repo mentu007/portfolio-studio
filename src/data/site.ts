@@ -6,25 +6,24 @@ export type LocalizedText = {
 };
 
 export const siteProfile = {
-  name: 'YOUR NAME',
-  location: 'Shanghai / Remote',
+  name: '刘良君',
+  location: 'Guangzhou, Guangdong',
   tagline: {
-    zh: '把复杂产品拆解成安静、清晰、可持续的体验。',
-    en: 'Turning complex products into calm, legible, sustainable experiences.'
+    zh: '聚焦前端体验、产品表达与可落地实现，把想法打磨成清晰、稳定、可分享的数字作品。',
+    en: 'Focused on frontend experience, product storytelling, and practical implementation that turns ideas into clear, stable, shareable digital work.'
   },
   intro: {
-    zh: 'Portfolio Studio 采用内容驱动的静态架构，把项目叙事、技术细节与视觉秩序压缩到一个轻量而可部署的前端系统里。',
-    en: 'Portfolio Studio is a content-driven static portfolio that compresses project storytelling, technical detail, and visual order into a lightweight deployable frontend.'
+    zh: '这里会逐步整理我在前端开发、界面实现与产品原型上的实践记录。当前站点已完成基础发布，后续会持续补充真实项目、实现思路与复盘内容。',
+    en: 'This site will gradually collect my work across frontend development, interface implementation, and product prototyping. The foundation is live now, with real projects, implementation notes, and retrospectives to be added over time.'
   },
-  email: 'hello@example.com',
+  email: '2621082160@qq.com',
   socials: [
-    { label: 'GitHub', href: 'https://github.com/your-name' },
-    { label: 'Email', href: 'mailto:hello@example.com' },
-    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/your-name/' }
+    { label: 'GitHub', href: 'https://github.com/mentu007' },
+    { label: 'Email', href: 'mailto:2621082160@qq.com' }
   ],
   seo: {
-    title: 'Portfolio Studio',
-    description: 'A static portfolio built with Astro, Tailwind, and content collections for calm, high-fidelity project storytelling.'
+    title: '刘良君 | Frontend Portfolio',
+    description: '刘良君的个人作品集网站，聚焦前端开发、界面实现、产品原型与持续迭代中的真实实践。'
   },
   ui: {
     homeCtas: {

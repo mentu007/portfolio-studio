@@ -37,6 +37,8 @@ const galleryProjects = projects.map((project) => ({
     alt: project.data.coverAlt
   }
 }));
+
+const hasProjects = projects.length > 0;
 ---
 
 <SiteLayout title={siteProfile.seo.title} description={siteProfile.seo.description}>
@@ -52,7 +54,18 @@ const galleryProjects = projects.map((project) => ({
       descriptionZh="按日期倒序浏览项目。每条记录都保留封面、摘要与技术标签，适合快速扫读。"
       descriptionEn="Browse work in reverse chronological order with a concise cover, summary, and stack preview."
     />
-    <CompactTimeline client:visible items={timelineItems} basePath={import.meta.env.BASE_URL} />
+    {hasProjects ? (
+      <CompactTimeline client:visible items={timelineItems} basePath={import.meta.env.BASE_URL} />
+    ) : (
+      <div class="section-shell">
+        <div class="surface-panel px-5 py-6 text-sm leading-7 text-fog-700 dark:text-slate-300 md:px-6 md:py-7 md:text-base">
+          <p>项目内容正在整理中，近期会逐步补充真实案例、实现过程与上线结果。</p>
+          <p class="mt-2 text-fog-500 dark:text-slate-400">
+            Project case studies are being prepared and will be published here soon.
+          </p>
+        </div>
+      </div>
+    )}
   </section>
 
   <section id="gallery" class="space-y-6 md:space-y-8">
@@ -64,12 +77,23 @@ const galleryProjects = projects.map((project) => ({
       descriptionZh="标签会从全部项目自动聚合。筛选时使用平滑重排动画，保持低噪音、高秩序的浏览感。"
       descriptionEn="Tags are aggregated from the whole collection and filtered with smooth layout animation."
     />
-    <GalleryFilter
-      client:visible
-      basePath={import.meta.env.BASE_URL}
-      projects={galleryProjects}
-      tags={tags}
-      labels={siteProfile.ui.gallery}
-    />
+    {hasProjects ? (
+      <GalleryFilter
+        client:visible
+        basePath={import.meta.env.BASE_URL}
+        projects={galleryProjects}
+        tags={tags}
+        labels={siteProfile.ui.gallery}
+      />
+    ) : (
+      <div class="section-shell">
+        <div class="surface-panel px-5 py-6 text-sm leading-7 text-fog-700 dark:text-slate-300 md:px-6 md:py-7 md:text-base">
+          <p>画廊区域暂时保留为空，用于后续展示真实项目截图、技术栈与线上预览。</p>
+          <p class="mt-2 text-fog-500 dark:text-slate-400">
+            This gallery will be filled with real projects, stack tags, and live previews.
+          </p>
+        </div>
+      </div>
+    )}
   </section>
 </SiteLayout>
