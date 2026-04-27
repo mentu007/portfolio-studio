@@ -14,7 +14,12 @@ const { projectCount = 0, tagCount = 0 } = Astro.props;
   <div class="space-y-6">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <p class="section-eyebrow">{siteProfile.location}</p>
+        <LocaleText
+          zh={siteProfile.location.zh}
+          en={siteProfile.location.en}
+          tag="p"
+          class="section-eyebrow"
+        />
         <LocaleText
           zh={siteProfile.name.zh}
           en={siteProfile.name.en}

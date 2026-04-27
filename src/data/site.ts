@@ -10,7 +10,10 @@ export const siteProfile = {
     zh: '刘良君',
     en: 'Jesse'
   },
-  location: 'Guangzhou, Guangdong',
+  location: {
+    zh: '中国，广东广州',
+    en: 'Guangzhou, Guangdong, China'
+  },
   tagline: {
     zh: '能够独立完成架构设计与技术选型，具备产品思维与 UI 设计审美，能够从用户体验角度优化产品交互。',
     en: 'Able to independently handle architecture design and technical selection, with product thinking and UI design sensibility to improve interaction from the user experience perspective.'
