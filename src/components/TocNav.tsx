@@ -100,13 +100,13 @@ export default function TocNav({ items, title, openLabel, closeLabel }: Props) {
   }
 
   return (
-    <div className="surface-panel sticky top-4 overflow-hidden p-3 md:p-4">
+    <div className="sticky top-4 overflow-hidden py-3 md:py-4">
       <div className="flex items-center justify-between gap-3">
         <p className="section-eyebrow">{title[locale]}</p>
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="rounded-full border border-fog-200 bg-white px-3 py-1.5 text-xs font-medium text-fog-700 md:hidden"
+          className="px-3 py-1.5 text-xs font-medium text-fog-700 transition hover:text-fog-950 md:hidden dark:text-fog-300 dark:hover:text-white"
         >
           {open ? closeLabel[locale] : openLabel[locale]}
         </button>

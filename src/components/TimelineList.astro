@@ -14,7 +14,7 @@ const { projects } = Astro.props;
 
 <div class="space-y-4">
   {projects.map((project, index) => (
-    <details class="surface-panel group overflow-hidden" open={index === 0}>
+    <details class="group overflow-hidden border-b border-fog-200 dark:border-fog-800" open={index === 0}>
       <summary class="grid cursor-pointer grid-cols-[auto,1fr,auto] items-center gap-3 px-5 py-4 md:px-6">
         <span class="font-mono text-[0.72rem] uppercase tracking-[0.26em] text-fog-500">
           {formatProjectDate(project.data.date)}

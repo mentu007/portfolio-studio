@@ -20,20 +20,20 @@ const {
 } = Astro.props;
 ---
 
-<div class="section-shell">
-  <LocaleText zh={eyebrowZh} en={eyebrowEn} class="section-eyebrow" />
+<div class="py-8 md:py-10">
+  <LocaleText zh={eyebrowZh} en={eyebrowEn} class="text-[0.68rem] font-medium uppercase tracking-[0.34em] text-fog-500" />
   <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.1fr),minmax(0,0.9fr)] lg:items-end">
     <LocaleText
       zh={titleZh}
       en={titleEn}
       tag="h2"
-      class="max-w-4xl text-2xl font-semibold tracking-[-0.04em] text-fog-900 dark:text-slate-50 md:text-4xl"
+      class="font-serif max-w-4xl text-2xl font-bold tracking-[0.02em] text-fog-950 dark:text-fog-50 md:text-4xl"
     />
     <LocaleText
       zh={descriptionZh}
       en={descriptionEn}
       tag="p"
-      class="max-w-2xl text-sm leading-7 text-fog-700 dark:text-slate-300 md:text-base"
+      class="max-w-2xl text-sm leading-7 text-fog-600 dark:text-fog-400 md:text-base"
     />
   </div>
 </div>

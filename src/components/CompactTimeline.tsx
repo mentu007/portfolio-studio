@@ -75,7 +75,7 @@ export default function CompactTimeline({ items, basePath }: Props) {
               aria-expanded={isOpen}
               aria-controls={panelId}
               onClick={() => setOpenSlug((current) => (current === item.slug ? null : item.slug))}
-              className="group flex w-full items-center gap-3 py-1.5 text-left text-slate-700 transition hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+              className="group flex w-full items-center gap-3 py-1.5 text-left text-fog-600 transition hover:text-fog-950 dark:text-fog-400 dark:hover:text-white"
             >
               <span className="shrink-0 text-sm text-slate-500 dark:text-slate-500">{item.date}</span>
               <span className="min-w-0 truncate font-medium">{item.title}</span>

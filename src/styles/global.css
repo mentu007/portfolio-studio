@@ -1,60 +1,56 @@
-@import "@fontsource-variable/ibm-plex-sans";
-@import "@fontsource/ibm-plex-mono";
+@import "@fontsource-variable/inter";
+@import "@fontsource/noto-serif-sc";
+@import "@fontsource/noto-serif-sc/chinese-simplified.css";
 @import "tailwindcss";
 
 @plugin "@tailwindcss/typography";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "IBM Plex Sans Variable", "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Noto Serif SC", "Source Han Serif SC", "STSong", "SimSun", serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", "Consolas", monospace;
 
-  --color-fog-50: #f8f9fb;
-  --color-fog-100: #f1f3f6;
-  --color-fog-150: #ebeef2;
-  --color-fog-200: #e1e5ea;
-  --color-fog-300: #d4d9e0;
-  --color-fog-400: #b9c1cc;
-  --color-fog-500: #9098a6;
-  --color-fog-600: #727b89;
-  --color-fog-700: #525c6c;
-  --color-fog-800: #303744;
-  --color-fog-900: #141922;
+  --color-fog-50: #fafafa;
+  --color-fog-100: #f5f5f5;
+  --color-fog-150: #eeeeee;
+  --color-fog-200: #e5e5e5;
+  --color-fog-300: #d4d4d4;
+  --color-fog-400: #a3a3a3;
+  --color-fog-500: #737373;
+  --color-fog-600: #525252;
+  --color-fog-700: #404040;
+  --color-fog-800: #262626;
+  --color-fog-900: #111111;
 }
 
 :root {
   color-scheme: light;
-  --page-bg: #f6f8fb;
-  --page-text: #141922;
-  --surface-strong: rgba(255, 255, 255, 0.78);
-  --surface-soft: rgba(255, 255, 255, 0.55);
-  --surface-stroke: rgba(114, 123, 137, 0.16);
-  --shadow-soft: 0 24px 80px rgba(20, 25, 34, 0.08);
-  --hero-glow: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.94) 0%, rgba(236, 239, 244, 0.48) 44%, rgba(236, 239, 244, 0) 72%);
-  --page-background: linear-gradient(180deg, #fbfcfd 0%, #f4f6f8 42%, #eef1f5 100%);
-  --page-glow: rgba(255, 255, 255, 0.4);
-  --ambient-ribbon:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(233, 236, 241, 0.72) 44%, rgba(225, 229, 234, 0.32) 100%),
-    radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.85), transparent 58%);
+  --page-bg: #fafafa;
+  --page-text: #111111;
+  --surface-strong: transparent;
+  --surface-soft: transparent;
+  --surface-stroke: transparent;
+  --shadow-soft: none;
+  --hero-glow: none;
+  --page-background: #fafafa;
+  --page-glow: transparent;
+  --ambient-ribbon: none;
   --sidebar-offset: 0px;
 }
 
 html.dark {
   color-scheme: dark;
-  --page-bg: #060b16;
-  --page-text: #f8fafc;
-  --surface-strong: rgba(15, 23, 42, 0.72);
-  --surface-soft: rgba(15, 23, 42, 0.54);
-  --surface-stroke: rgba(148, 163, 184, 0.2);
-  --shadow-soft: 0 28px 88px rgba(2, 6, 23, 0.42);
-  --hero-glow: radial-gradient(circle at 20% 20%, rgba(148, 163, 184, 0.18) 0%, rgba(30, 41, 59, 0.16) 42%, rgba(15, 23, 42, 0) 72%);
-  --page-background:
-    radial-gradient(circle at 20% 0%, rgba(71, 85, 105, 0.18), transparent 30%),
-    linear-gradient(180deg, #020617 0%, #060b16 42%, #0f172a 100%);
-  --page-glow: rgba(15, 23, 42, 0.48);
-  --ambient-ribbon:
-    linear-gradient(135deg, rgba(30, 41, 59, 0.58) 0%, rgba(51, 65, 85, 0.34) 42%, rgba(15, 23, 42, 0.08) 100%),
-    radial-gradient(circle at 10% 0%, rgba(148, 163, 184, 0.22), transparent 58%);
+  --page-bg: #0a0a0a;
+  --page-text: #f5f5f5;
+  --surface-strong: transparent;
+  --surface-soft: transparent;
+  --surface-stroke: transparent;
+  --shadow-soft: none;
+  --hero-glow: none;
+  --page-background: #0a0a0a;
+  --page-glow: transparent;
+  --ambient-ribbon: none;
 }
 
 html {
@@ -69,13 +65,13 @@ body {
 }
 
 ::selection {
-  background: rgba(185, 193, 204, 0.45);
-  color: #111827;
+  background: rgba(0, 0, 0, 0.12);
+  color: #111111;
 }
 
 html.dark ::selection {
-  background: rgba(100, 116, 139, 0.44);
-  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.15);
+  color: #f5f5f5;
 }
 
 summary {
@@ -119,23 +115,28 @@ code {
   }
 
   .section-shell {
-    @apply rounded-[2rem] border border-[var(--surface-stroke)] bg-[var(--surface-soft)] p-5 shadow-[var(--shadow-soft)] backdrop-blur-xl md:p-8;
+    @apply py-8 md:py-10;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    border-radius: 0;
   }
 
   .surface-panel {
-    @apply rounded-[1.75rem] border border-[var(--surface-stroke)] bg-[var(--surface-strong)] shadow-[var(--shadow-soft)] backdrop-blur-xl;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    border-radius: 0;
   }
 
   .section-eyebrow {
-    @apply font-mono text-[0.68rem] uppercase tracking-[0.34em] text-fog-500;
+    @apply text-[0.68rem] font-medium uppercase tracking-[0.34em] text-fog-500;
   }
 
   .pixel-grid {
-    background-image:
-      linear-gradient(rgba(144, 152, 166, 0.11) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(144, 152, 166, 0.11) 1px, transparent 1px);
-    background-size: 28px 28px;
-    mask-image: linear-gradient(to bottom, rgba(20, 25, 34, 0.3), rgba(20, 25, 34, 0.08));
+    display: none;
   }
 
   .page-background {
@@ -143,19 +144,15 @@ code {
   }
 
   .page-glow {
-    background: var(--page-glow);
+    display: none;
   }
 
   .ambient-ribbon {
-    background: var(--ambient-ribbon);
-    animation: ambient-breathe 11s ease-in-out infinite;
-    will-change: transform, opacity;
+    display: none;
   }
 
   .hero-card {
-    background:
-      var(--hero-glow),
-      linear-gradient(140deg, rgba(255, 255, 255, 0.88) 0%, rgba(243, 245, 248, 0.74) 48%, rgba(228, 232, 238, 0.48) 100%);
+    background: transparent;
   }
 
   .locale-copy-zh,
@@ -172,7 +169,7 @@ code {
   }
 
   .prose-shell {
-    @apply prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-fog-900 prose-p:text-fog-700 prose-p:leading-8 prose-li:text-fog-700 prose-strong:text-fog-900 prose-a:text-fog-800 prose-a:decoration-fog-400 prose-code:rounded prose-code:bg-fog-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[0.9em] prose-code:text-fog-800 prose-code:before:content-[''] prose-code:after:content-[''] prose-pre:overflow-x-auto prose-pre:rounded-[1.25rem] prose-pre:border prose-pre:border-fog-200 prose-pre:bg-white prose-pre:px-0 prose-pre:py-0 prose-img:rounded-[1.5rem] prose-img:border prose-img:border-fog-200 prose-blockquote:border-fog-300 prose-blockquote:text-fog-700 dark:prose-invert dark:prose-headings:text-slate-50 dark:prose-p:text-slate-300 dark:prose-li:text-slate-300 dark:prose-strong:text-slate-50 dark:prose-a:text-slate-100 dark:prose-code:bg-slate-900 dark:prose-code:text-slate-100 dark:prose-pre:border-slate-700 dark:prose-pre:bg-slate-950 dark:prose-img:border-slate-700 dark:prose-blockquote:border-slate-700 dark:prose-blockquote:text-slate-300;
+    @apply prose prose-neutral max-w-none prose-headings:font-semibold prose-headings:text-fog-900 prose-p:text-fog-700 prose-p:leading-8 prose-li:text-fog-700 prose-strong:text-fog-900 prose-a:text-fog-800 prose-a:decoration-fog-400 prose-code:rounded prose-code:bg-fog-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[0.9em] prose-code:text-fog-800 prose-code:before:content-[''] prose-code:after:content-[''] prose-pre:overflow-x-auto prose-pre:rounded-[1.25rem] prose-pre:border prose-pre:border-fog-200 prose-pre:bg-white prose-pre:px-0 prose-pre:py-0 prose-img:rounded-[1.5rem] prose-img:border prose-img:border-fog-200 prose-blockquote:border-fog-300 prose-blockquote:text-fog-700 dark:prose-invert dark:prose-headings:text-neutral-50 dark:prose-p:text-neutral-300 dark:prose-li:text-neutral-300 dark:prose-strong:text-neutral-50 dark:prose-a:text-neutral-100 dark:prose-code:bg-neutral-900 dark:prose-code:text-neutral-100 dark:prose-pre:border-neutral-700 dark:prose-pre:bg-neutral-950 dark:prose-img:border-neutral-700 dark:prose-blockquote:border-neutral-700 dark:prose-blockquote:text-neutral-300;
   }
 
   .heading-anchor {
@@ -182,6 +179,16 @@ code {
   .prose-shell :is(h1, h2, h3, h4):hover .heading-anchor {
     @apply opacity-100;
   }
+
+  .fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+
+  .fade-in-up-delay-1 { animation-delay: 0.08s; }
+  .fade-in-up-delay-2 { animation-delay: 0.16s; }
+  .fade-in-up-delay-3 { animation-delay: 0.24s; }
+  .fade-in-up-delay-4 { animation-delay: 0.32s; }
 }
 
 @media (min-width: 768px) {
@@ -193,6 +200,17 @@ code {
 @media (min-width: 1024px) {
   .site-frame {
     padding-inline-start: calc(3rem + var(--sidebar-offset));
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -216,5 +234,10 @@ code {
 
   .ambient-ribbon {
     animation: none;
+  }
+
+  .fade-in-up {
+    animation: none;
+    opacity: 1;
   }
 }
