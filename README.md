@@ -42,6 +42,11 @@ src/
 - `astro.config.mjs` 会优先读取 GitHub Actions 注入的仓库信息自动推导 `site` 和 `base`
 - 本地生产构建默认按 `/portfolio-studio/` 子路径生成资源，提前规避 GitHub Pages 的子路径 404 问题
 
+## 部署状态
+
+- 最近部署时间：2026-04-28
+- 部署方式：GitHub Actions (`.github/workflows/deploy.yml`)
+
 ## 需要替换的个人信息
 
 - [src/data/site.ts](./src/data/site.ts)
